@@ -1,16 +1,26 @@
-# khafidh_mdtest
+<!-- Main project documentation file -->
+# Project Overview
+A new Flutter project integrated with Firebase and Provider state management.
 
-A new Flutter project.
+## Tech Stack
+- Flutter (Dart)
+- Firebase Core Integration
+- Firebase Authentication
+- Cloud Firestore
+- Provider (State Management)
 
-## Getting Started
+## Prerequisites
+- Flutter SDK
+- Dart SDK
+- Firebase account
+- Android Studio / VS Code
 
-This project is a starting point for a Flutter application.
+## Installation Steps
+1. Clone the repository
+2. Run `flutter pub get`
+3. Set up Firebase Configuration (see below)
+4. Run `flutter run`
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Firebase Setup
+- For **Android**: Get the `google-services.json` from Firebase console and put it in `android/app/google-services.json`.
+- For **iOS**: Get the `GoogleService-Info.plist` from Firebase console and put it in `ios/Runner/GoogleService-Info.plist`.

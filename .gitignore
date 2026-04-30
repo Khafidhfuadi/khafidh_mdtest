@@ -1,3 +1,5 @@
+# File untuk mengabaikan file dan direktori di Git
+
 # Miscellaneous
 *.class
 *.log
@@ -43,3 +45,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+
+# Env & Keystore
+.env
+*.keystore
