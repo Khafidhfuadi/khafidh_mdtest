@@ -143,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     autocorrect: false,
                     decoration: const InputDecoration(
                       labelText: 'Email',
-                      hintText: 'contoh@email.com',
+                      hintText: 'john@email.com',
                       prefixIcon: Icon(Icons.email_outlined),
                     ),
                     validator: Validators.validateEmail,
