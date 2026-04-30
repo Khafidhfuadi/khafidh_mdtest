@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:khafidh_mdtest/core/widgets/verification_badge.dart';
 import 'package:khafidh_mdtest/data/models/user_model.dart';
 
 class UserListItem extends StatelessWidget {
@@ -28,13 +29,7 @@ class UserListItem extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w500),
         ),
         subtitle: Text(user.email),
-        trailing: Icon(
-          user.isEmailVerified ? Icons.verified : Icons.cancel_outlined,
-          color: user.isEmailVerified
-              ? Colors.green.shade600
-              : Colors.red.shade400,
-          size: 20,
-        ),
+        trailing: VerificationBadge(isVerified: user.isEmailVerified),
       ),
     );
   }

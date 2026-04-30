@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:khafidh_mdtest/core/constants/enums.dart';
+import 'package:khafidh_mdtest/core/widgets/verification_badge.dart';
 import 'package:khafidh_mdtest/providers/auth_provider.dart';
 import 'package:khafidh_mdtest/providers/user_provider.dart';
 import 'package:khafidh_mdtest/features/auth/login/login_screen.dart';
@@ -98,33 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: (user?.isEmailVerified ?? false)
-                                ? Colors.green.shade100
-                                : Colors.red.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            (user?.isEmailVerified ?? false)
-                                ? 'Verified'
-                                : 'Not Verified',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: (user?.isEmailVerified ?? false)
-                                  ? Colors.green.shade800
-                                  : Colors.red.shade800,
-                            ),
-                          ),
-                        ),
-                      ],
+                    VerificationBadge(
+                      isVerified: user?.isEmailVerified ?? false,
                     ),
                   ],
                 ),

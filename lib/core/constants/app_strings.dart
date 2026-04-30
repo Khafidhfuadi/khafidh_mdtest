@@ -1,4 +1,4 @@
 // app_strings.dart - Konstanta string teks untuk aplikasi
 class AppStrings {
-  static const String appName = 'App Name';
+  static const String appName = 'MDTest';
 }

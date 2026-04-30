@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:khafidh_mdtest/core/theme/app_theme.dart';
 import 'package:khafidh_mdtest/providers/auth_provider.dart';
 import 'package:khafidh_mdtest/providers/user_provider.dart';
 import 'package:khafidh_mdtest/features/auth/login/login_screen.dart';
@@ -30,9 +31,8 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        ),
+        theme: AppTheme.darkTheme,
+        themeMode: ThemeMode.dark,
         home: Consumer<AuthProvider>(
           builder: (context, auth, _) {
             if (auth.isLoggedIn) {
