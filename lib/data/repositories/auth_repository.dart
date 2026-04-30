@@ -1,17 +1,14 @@
 // AuthRepository - abstraksi semua operasi Firebase Authentication
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:khafidh_mdtest/core/utils/error_handler.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Getter untuk mendapatkan user yang sedang login saat ini.
   User? get currentUser => _auth.currentUser;
 
-  /// Stream perubahan state autentikasi (login/logout).
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  /// Login dengan email dan password.
-  /// Melempar exception jika kredensial salah atau terjadi error jaringan.
   Future<UserCredential> signIn(String email, String password) async {
     try {
       final credential = await _auth.signInWithEmailAndPassword(
@@ -20,27 +17,12 @@ class AuthRepository {
       );
       return credential;
     } on FirebaseAuthException catch (e) {
-      switch (e.code) {
-        case 'user-not-found':
-          throw Exception('Akun dengan email ini tidak ditemukan.');
-        case 'wrong-password':
-          throw Exception('Password yang dimasukkan salah.');
-        case 'invalid-email':
-          throw Exception('Format email tidak valid.');
-        case 'user-disabled':
-          throw Exception('Akun ini telah dinonaktifkan.');
-        case 'invalid-credential':
-          throw Exception('Email atau password salah.');
-        default:
-          throw Exception('Login gagal: ${e.message}');
-      }
+      throw Exception(ErrorHandler.getAuthErrorMessage(e));
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat login: $e');
+      throw Exception(ErrorHandler.getGeneralErrorMessage(e));
     }
   }
 
-  /// Registrasi akun baru dengan email, password, dan nama.
-  /// Setelah berhasil, displayName akan diupdate di FirebaseAuth.
   Future<UserCredential> signUp(
     String email,
     String password,
@@ -51,57 +33,36 @@ class AuthRepository {
         email: email,
         password: password,
       );
-      // Update display name setelah registrasi berhasil
       await credential.user?.updateDisplayName(name);
       await credential.user?.reload();
       return credential;
     } on FirebaseAuthException catch (e) {
-      switch (e.code) {
-        case 'email-already-in-use':
-          throw Exception('Email sudah terdaftar. Gunakan email lain.');
-        case 'weak-password':
-          throw Exception('Password terlalu lemah. Gunakan minimal 6 karakter.');
-        case 'invalid-email':
-          throw Exception('Format email tidak valid.');
-        case 'operation-not-allowed':
-          throw Exception('Registrasi dengan email/password tidak diizinkan.');
-        default:
-          throw Exception('Registrasi gagal: ${e.message}');
-      }
+      throw Exception(ErrorHandler.getAuthErrorMessage(e));
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat registrasi: $e');
+      throw Exception(ErrorHandler.getGeneralErrorMessage(e));
     }
   }
 
-  /// Logout dari akun saat ini.
   Future<void> signOut() async {
     try {
       await _auth.signOut();
+    } on FirebaseAuthException catch (e) {
+      throw Exception(ErrorHandler.getAuthErrorMessage(e));
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat logout: $e');
+      throw Exception(ErrorHandler.getGeneralErrorMessage(e));
     }
   }
 
-  /// Mengirim email reset password ke alamat email yang diberikan.
   Future<void> sendPasswordReset(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
-      switch (e.code) {
-        case 'user-not-found':
-          throw Exception('Akun dengan email ini tidak ditemukan.');
-        case 'invalid-email':
-          throw Exception('Format email tidak valid.');
-        default:
-          throw Exception('Gagal mengirim email reset password: ${e.message}');
-      }
+      throw Exception(ErrorHandler.getAuthErrorMessage(e));
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat mengirim reset password: $e');
+      throw Exception(ErrorHandler.getGeneralErrorMessage(e));
     }
   }
 
-  /// Mengirim email verifikasi ke user yang sedang login.
-  /// Melempar exception jika tidak ada user yang login.
   Future<void> sendEmailVerification() async {
     try {
       final user = _auth.currentUser;
@@ -113,14 +74,14 @@ class AuthRepository {
       }
       await user.sendEmailVerification();
     } on FirebaseAuthException catch (e) {
-      throw Exception('Gagal mengirim email verifikasi: ${e.message}');
+      throw Exception(ErrorHandler.getAuthErrorMessage(e));
+    } on Exception {
+      rethrow;
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat mengirim verifikasi email: $e');
+      throw Exception(ErrorHandler.getGeneralErrorMessage(e));
     }
   }
 
-  /// Me-reload data user dari Firebase untuk mendapatkan status terbaru
-  /// (misalnya status emailVerified setelah user klik link verifikasi).
   Future<void> reloadUser() async {
     try {
       final user = _auth.currentUser;
@@ -129,9 +90,11 @@ class AuthRepository {
       }
       await user.reload();
     } on FirebaseAuthException catch (e) {
-      throw Exception('Gagal memuat ulang data user: ${e.message}');
+      throw Exception(ErrorHandler.getAuthErrorMessage(e));
+    } on Exception {
+      rethrow;
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat reload user: $e');
+      throw Exception(ErrorHandler.getGeneralErrorMessage(e));
     }
   }
 }

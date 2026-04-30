@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:khafidh_mdtest/core/constants/app_colors.dart';
 import 'package:khafidh_mdtest/core/constants/enums.dart';
+import 'package:khafidh_mdtest/core/widgets/empty_state_widget.dart';
 import 'package:khafidh_mdtest/core/widgets/verification_badge.dart';
 import 'package:khafidh_mdtest/providers/auth_provider.dart';
 import 'package:khafidh_mdtest/providers/user_provider.dart';
@@ -274,27 +275,20 @@ class _HomeScreenState extends State<HomeScreen> {
         final users = userProvider.filteredUsers;
 
         if (users.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.people_outline,
-                  size: 64,
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  userProvider.searchQuery.isNotEmpty ||
-                          userProvider.filterStatus != FilterStatus.all
-                      ? 'Tidak ada user yang cocok'
-                      : 'Belum ada user terdaftar',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+          final hasActiveFilter =
+              userProvider.searchQuery.isNotEmpty ||
+              userProvider.filterStatus != FilterStatus.all;
+
+          return EmptyStateWidget(
+            icon: hasActiveFilter
+                ? Icons.search_off_rounded
+                : Icons.people_outline,
+            title: hasActiveFilter
+                ? 'Tidak ada user yang cocok'
+                : 'Belum ada user terdaftar',
+            subtitle: hasActiveFilter
+                ? 'Coba ubah kata kunci atau filter'
+                : 'User yang mendaftar akan muncul di sini',
           );
         }
 
