@@ -2,6 +2,6 @@
 import 'package:flutter/material.dart';
 
 class UserProvider extends ChangeNotifier {
-  List<dynamic> _users = [];
+  final List<dynamic> _users = [];
   List<dynamic> get users => _users;
 }
