@@ -1,5 +1,6 @@
 // AuthRepository - abstraksi semua operasi Firebase Authentication
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:khafidh_mdtest/core/utils/error_handler.dart';
 
 class AuthRepository {
@@ -16,6 +17,29 @@ class AuthRepository {
         password: password,
       );
       return credential;
+    } on FirebaseAuthException catch (e) {
+      throw Exception(ErrorHandler.getAuthErrorMessage(e));
+    } catch (e) {
+      throw Exception(ErrorHandler.getGeneralErrorMessage(e));
+    }
+  }
+
+  Future<UserCredential> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        throw Exception('Google Sign-In dibatalkan oleh pengguna.');
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      return await _auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       throw Exception(ErrorHandler.getAuthErrorMessage(e));
     } catch (e) {

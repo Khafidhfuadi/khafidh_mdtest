@@ -134,6 +134,45 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> signInWithGoogle() async {
+    try {
+      _setLoading(true);
+      _setError(null);
+
+      // Lakukan login ke Firebase via Google
+      final credential = await _authRepository.signInWithGoogle();
+      final user = credential.user;
+
+      if (user != null) {
+        // Cek apakah user sudah ada di database
+        final isNewUser = credential.additionalUserInfo?.isNewUser ?? false;
+        
+        if (isNewUser) {
+          // Buat data UserModel baru untuk disimpan di Firestore
+          final newUser = UserModel(
+            uid: user.uid,
+            name: user.displayName ?? 'Pengguna',
+            email: user.email ?? '',
+            isEmailVerified: true, // Google account otomatis verified
+            createdAt: DateTime.now(),
+          );
+          
+          await _userRepository.createUser(newUser);
+          _currentUser = newUser;
+        }
+        
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } on Exception catch (e) {
+      _setError(e.toString().replaceFirst('Exception: ', ''));
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<bool> register(String email, String password, String name) async {
     try {
       _setLoading(true);

@@ -1,1 +1,21 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"khafidh-mdtest","appId":"1:581175466443:android:a9d37a37fc1dca3d9cbe4e","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"khafidh-mdtest","configurations":{"android":"1:581175466443:android:a9d37a37fc1dca3d9cbe4e"}}}}}}
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "khafidh-mdtest",
+                    "appId": "1:581175466443:android:a9d37a37fc1dca3d9cbe4e",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "khafidh-mdtest",
+                    "configurations": {
+                        "android": "1:581175466443:android:a9d37a37fc1dca3d9cbe4e"
+                    }
+                }
+            }
+        }
+    }
+}
