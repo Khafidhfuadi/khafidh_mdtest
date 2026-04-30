@@ -10,34 +10,31 @@ class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository = AuthRepository();
   final UserRepository _userRepository = UserRepository();
 
-  // -- State --
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
 
   StreamSubscription<User?>? _authSubscription;
 
-  // -- Getter --
+  // Listener perubahan status verifikasi email secara realtime
+  Timer? _verificationTimer;
+
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isLoggedIn => _currentUser != null;
 
-  // -- Helper untuk mengubah loading state --
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
 
-  // -- Helper untuk mengubah error state --
   void _setError(String? message) {
     _errorMessage = message;
     notifyListeners();
   }
 
   /// Inisialisasi listener untuk perubahan state autentikasi Firebase.
-  /// Dipanggil sekali saat aplikasi dimulai.
-  /// Ketika user login/logout, _currentUser akan diupdate secara otomatis.
   void initialize() {
     _authSubscription?.cancel();
     _authSubscription =
@@ -45,8 +42,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Callback internal saat state autentikasi berubah.
-  /// Jika ada user yang login, ambil data dari Firestore.
-  /// Jika tidak ada user (logout), reset _currentUser.
   Future<void> _onAuthStateChanged(User? firebaseUser) async {
     if (firebaseUser != null) {
       _currentUser = UserModel(
@@ -56,14 +51,75 @@ class AuthProvider extends ChangeNotifier {
         isEmailVerified: firebaseUser.emailVerified,
         createdAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
       );
+
+      if (!firebaseUser.emailVerified) {
+        startVerificationPolling();
+      } else {
+        stopVerificationPolling();
+      }
     } else {
       _currentUser = null;
+      stopVerificationPolling();
     }
     notifyListeners();
   }
 
-  /// Login dengan email dan password.
-  /// Memanggil AuthRepository.signIn dan menangani error.
+  /// Mulai polling status verifikasi email setiap 5 detik.
+  /// Otomatis berhenti ketika email sudah terverifikasi.
+  void startVerificationPolling() {
+    stopVerificationPolling();
+    _verificationTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _checkVerificationStatus(),
+    );
+  }
+
+  /// Hentikan polling status verifikasi email.
+  void stopVerificationPolling() {
+    _verificationTimer?.cancel();
+    _verificationTimer = null;
+  }
+
+  /// Cek status verifikasi email dari Firebase.
+  /// Jika status berubah menjadi verified: cancel timer, update state, sync Firestore.
+  Future<void> _checkVerificationStatus() async {
+    try {
+      await _authRepository.reloadUser();
+      final firebaseUser = _authRepository.currentUser;
+
+      if (firebaseUser != null && firebaseUser.emailVerified) {
+        stopVerificationPolling();
+
+        if (_currentUser != null && !_currentUser!.isEmailVerified) {
+          _currentUser = _currentUser!.copyWith(isEmailVerified: true);
+          notifyListeners();
+
+          await _userRepository.updateEmailVerification(
+            firebaseUser.uid,
+            true,
+          );
+        }
+      }
+    } catch (_) {
+      // Polling gagal diabaikan, akan dicoba lagi di iterasi berikutnya
+    }
+  }
+
+  /// Mengirim ulang email verifikasi.
+  Future<bool> resendEmailVerification() async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      await _authRepository.sendEmailVerification();
+      return true;
+    } on Exception catch (e) {
+      _setError(e.toString().replaceFirst('Exception: ', ''));
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<bool> login(String email, String password) async {
     try {
       _setLoading(true);
@@ -78,20 +134,14 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Registrasi akun baru.
-  /// Alur: signUp -> kirim email verifikasi -> simpan user ke Firestore.
   Future<bool> register(String email, String password, String name) async {
     try {
       _setLoading(true);
       _setError(null);
 
-      // 1. Buat akun di Firebase Auth
       final credential = await _authRepository.signUp(email, password, name);
-
-      // 2. Kirim email verifikasi
       await _authRepository.sendEmailVerification();
 
-      // 3. Simpan data user ke Firestore
       final newUser = UserModel(
         uid: credential.user!.uid,
         name: name,
@@ -100,6 +150,11 @@ class AuthProvider extends ChangeNotifier {
         createdAt: DateTime.now(),
       );
       await _userRepository.createUser(newUser);
+
+      // Set manual karena authStateChanges bisa fire sebelum displayName terupdate
+      _currentUser = newUser;
+      startVerificationPolling();
+      notifyListeners();
 
       return true;
     } on Exception catch (e) {
@@ -110,11 +165,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Logout dari akun saat ini.
   Future<bool> logout() async {
     try {
       _setLoading(true);
       _setError(null);
+      stopVerificationPolling();
       await _authRepository.signOut();
       _currentUser = null;
       return true;
@@ -126,7 +181,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Mengirim email reset password.
   Future<bool> sendPasswordReset(String email) async {
     try {
       _setLoading(true);
@@ -141,9 +195,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Refresh data user dari Firebase.
-  /// Berguna untuk mengecek status verifikasi email terbaru.
-  /// Jika email sudah terverifikasi, update juga status di Firestore.
   Future<void> refreshUser() async {
     try {
       _setLoading(true);
@@ -158,8 +209,8 @@ class AuthProvider extends ChangeNotifier {
           name: firebaseUser.displayName ?? _currentUser!.name,
         );
 
-        // Sinkronkan status verifikasi ke Firestore jika baru saja terverifikasi
         if (!wasVerified && firebaseUser.emailVerified) {
+          stopVerificationPolling();
           await _userRepository.updateEmailVerification(
             firebaseUser.uid,
             true,
@@ -173,7 +224,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Menghapus pesan error.
   void clearError() {
     _setError(null);
   }
@@ -181,6 +231,7 @@ class AuthProvider extends ChangeNotifier {
   @override
   void dispose() {
     _authSubscription?.cancel();
+    stopVerificationPolling();
     super.dispose();
   }
 }

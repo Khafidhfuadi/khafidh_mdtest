@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:khafidh_mdtest/core/constants/app_colors.dart';
 import 'package:khafidh_mdtest/core/constants/enums.dart';
 import 'package:khafidh_mdtest/core/widgets/verification_badge.dart';
 import 'package:khafidh_mdtest/providers/auth_provider.dart';
@@ -55,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           _buildHeaderSection(theme),
+          _buildVerificationBanner(theme),
           _buildSearchBar(theme),
           _buildFilterChips(theme),
           const Divider(height: 1),
@@ -115,6 +117,94 @@ class _HomeScreenState extends State<HomeScreen> {
                     : const Icon(Icons.refresh),
                 tooltip: 'Refresh status verifikasi',
                 onPressed: auth.isLoading ? null : auth.refreshUser,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVerificationBanner(ThemeData theme) {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        final user = auth.currentUser;
+        if (user == null || user.isEmailVerified) {
+          return const SizedBox.shrink();
+        }
+
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF422006),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.warning.withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.warning,
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Email belum terverifikasi',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.amber.shade200,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Cek inbox email Anda untuk link verifikasi.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.amber.shade200.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 32,
+                child: TextButton(
+                  onPressed: auth.isLoading
+                      ? null
+                      : () async {
+                          final success =
+                              await auth.resendEmailVerification();
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                success
+                                    ? 'Email verifikasi telah dikirim ulang.'
+                                    : auth.errorMessage ?? 'Gagal mengirim.',
+                              ),
+                            ),
+                          );
+                        },
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.warning,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  child: const Text('Kirim Ulang'),
+                ),
               ),
             ],
           ),
