@@ -6,21 +6,32 @@ class UserRepository {
   final CollectionReference _usersCollection =
       FirebaseFirestore.instance.collection('users');
 
-  /// Mendapatkan stream daftar semua user dari Firestore.
-  /// Data akan otomatis terupdate secara realtime ketika ada perubahan.
-  Stream<List<UserModel>> getUsers() {
-    try {
-      return _usersCollection
-          .orderBy('createdAt', descending: true)
-          .snapshots()
-          .map((snapshot) {
-        return snapshot.docs.map((doc) {
-          return UserModel.fromFirestore(doc);
-        }).toList();
-      });
-    } catch (e) {
-      throw Exception('Gagal mengambil data users: $e');
-    }
+  /// Jumlah dokumen yang diambil per halaman.
+  static const int pageSize = 15;
+
+  /// Mengambil halaman pertama dari daftar user, diurutkan berdasarkan createdAt descending.
+  Future<QuerySnapshot> getFirstPage() {
+    return _usersCollection
+        .orderBy('createdAt', descending: true)
+        .limit(pageSize)
+        .get();
+  }
+
+  /// Mengambil halaman berikutnya setelah dokumen terakhir yang diberikan.
+  Future<QuerySnapshot> getNextPage(DocumentSnapshot lastDocument) {
+    return _usersCollection
+        .orderBy('createdAt', descending: true)
+        .startAfterDocument(lastDocument)
+        .limit(pageSize)
+        .get();
+  }
+
+  /// Mendapatkan stream realtime untuk mendeteksi perubahan data user.
+  /// Digunakan untuk memperbarui data yang sudah dimuat jika ada perubahan di Firestore.
+  Stream<QuerySnapshot> getUsersStream() {
+    return _usersCollection
+        .orderBy('createdAt', descending: true)
+        .snapshots();
   }
 
   /// Membuat dokumen user baru di Firestore.

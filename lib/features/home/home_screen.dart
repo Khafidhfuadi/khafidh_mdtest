@@ -17,12 +17,29 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<UserProvider>().listenToUsers();
+      context.read<UserProvider>().loadUsers();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<UserProvider>().loadMoreUsers();
+    }
   }
 
   Future<void> _handleLogout() async {
@@ -287,10 +304,28 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
+        // Tambahkan 1 item di akhir jika masih ada data selanjutnya
+        // untuk menampilkan loading indicator.
+        final itemCount = users.length + (userProvider.hasMore ? 1 : 0);
+
         return ListView.builder(
+          controller: _scrollController,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: users.length,
+          itemCount: itemCount,
           itemBuilder: (context, index) {
+            if (index >= users.length) {
+              // Loading indicator di bagian paling bawah list
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+                ),
+              );
+            }
             return UserListItem(user: users[index]);
           },
         );
