@@ -3,8 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:khafidh_mdtest/data/models/user_model.dart';
 
 class UserRepository {
-  final CollectionReference _usersCollection =
-      FirebaseFirestore.instance.collection('users');
+  final CollectionReference _usersCollection;
+
+  UserRepository({FirebaseFirestore? firestore})
+      : _usersCollection =
+            (firestore ?? FirebaseFirestore.instance).collection('users');
 
   /// Jumlah dokumen yang diambil per halaman.
   static const int pageSize = 15;
