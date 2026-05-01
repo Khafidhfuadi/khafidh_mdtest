@@ -108,17 +108,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              IconButton(
-                icon: auth.isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.refresh),
-                tooltip: 'Refresh status verifikasi',
-                onPressed: auth.isLoading ? null : auth.refreshUser,
-              ),
+              // IconButton(
+              //   icon: auth.isLoading
+              //       ? const SizedBox(
+              //           width: 20,
+              //           height: 20,
+              //           child: CircularProgressIndicator(strokeWidth: 2),
+              //         )
+              //       : const Icon(Icons.refresh),
+              //   tooltip: 'Refresh status verifikasi',
+              //   onPressed: auth.isLoading ? null : auth.refreshUser,
+              // ),
             ],
           ),
         );
@@ -141,9 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF422006),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.warning.withOpacity(0.3),
-            ),
+            border: Border.all(color: AppColors.warning.withOpacity(0.3)),
           ),
           child: Row(
             children: [
@@ -183,8 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: auth.isLoading
                       ? null
                       : () async {
-                          final success =
-                              await auth.resendEmailVerification();
+                          final success = await auth.resendEmailVerification();
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -223,9 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
           prefixIcon: const Icon(Icons.search),
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(vertical: 10),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
         onChanged: (value) {
           context.read<UserProvider>().setSearchQuery(value);

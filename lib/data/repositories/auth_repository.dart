@@ -1,5 +1,6 @@
 // AuthRepository - abstraksi semua operasi Firebase Authentication
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:khafidh_mdtest/core/utils/error_handler.dart';
 
@@ -42,6 +43,14 @@ class AuthRepository {
       return await _auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       throw Exception(ErrorHandler.getAuthErrorMessage(e));
+    } on PlatformException catch (e) {
+      // PlatformException terjadi jika ada masalah dari sisi platform native (Android/iOS)
+      if (e.code == 'sign_in_canceled') {
+        throw Exception('Login Google dibatalkan.');
+      } else if (e.code == 'network_error') {
+        throw Exception('Gagal masuk. Periksa koneksi internet Anda.');
+      }
+      throw Exception('Google Sign-In Error: ${e.code} - ${e.message}');
     } catch (e) {
       throw Exception(ErrorHandler.getGeneralErrorMessage(e));
     }
@@ -69,7 +78,7 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
-      await _auth.signOut();
+      await Future.wait([_auth.signOut(), GoogleSignIn().signOut()]);
     } on FirebaseAuthException catch (e) {
       throw Exception(ErrorHandler.getAuthErrorMessage(e));
     } catch (e) {

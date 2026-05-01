@@ -173,25 +173,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  Consumer<AuthProvider>(
-                    builder: (context, auth, _) {
-                      if (auth.errorMessage == null) {
-                        return const SizedBox.shrink();
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(
-                          auth.errorMessage!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: theme.colorScheme.error,
-                            fontSize: 13,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
+                  // Consumer<AuthProvider>(
+                  //   builder: (context, auth, _) {
+                  //     if (auth.errorMessage == null) {
+                  //       return const SizedBox.shrink();
+                  //     }
+                  //     return Padding(
+                  //       padding: const EdgeInsets.only(bottom: 16),
+                  //       child: Text(
+                  //         auth.errorMessage!,
+                  //         textAlign: TextAlign.center,
+                  //         style: TextStyle(
+                  //           color: theme.colorScheme.error,
+                  //           fontSize: 13,
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
                   Consumer<AuthProvider>(
                     builder: (context, auth, _) {
                       return SizedBox(
@@ -226,7 +225,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   Row(
                     children: [
-                      Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
+                      Expanded(
+                        child: Divider(color: theme.colorScheme.outlineVariant),
+                      ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
@@ -236,7 +237,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
+                      Expanded(
+                        child: Divider(color: theme.colorScheme.outlineVariant),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -246,11 +249,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       return SizedBox(
                         height: 48,
                         child: OutlinedButton.icon(
-                          onPressed: auth.isLoading ? null : _handleGoogleSignIn,
+                          onPressed: auth.isLoading
+                              ? null
+                              : _handleGoogleSignIn,
                           icon: Image.network(
                             'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
                             height: 24,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_circle),
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.account_circle),
                           ),
                           label: const Text(
                             'Masuk dengan Google',
