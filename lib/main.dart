@@ -1,5 +1,6 @@
 // Entry point aplikasi Flutter dan inisialisasi Firebase
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:khafidh_mdtest/core/theme/app_theme.dart';
@@ -11,6 +12,7 @@ import 'package:khafidh_mdtest/features/home/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await initializeDateFormatting('id_ID', null);
   runApp(const MyApp());
 }
 

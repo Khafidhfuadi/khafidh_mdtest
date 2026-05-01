@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:khafidh_mdtest/core/widgets/verification_badge.dart';
 import 'package:khafidh_mdtest/data/models/user_model.dart';
+import 'package:khafidh_mdtest/features/home/user_detail_screen.dart';
 
 class UserListItem extends StatelessWidget {
   final UserModel user;
@@ -30,6 +31,12 @@ class UserListItem extends StatelessWidget {
         ),
         subtitle: Text(user.email),
         trailing: VerificationBadge(isVerified: user.isEmailVerified),
+
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => UserDetailScreen(user: user)),
+          );
+        },
       ),
     );
   }
