@@ -6,9 +6,16 @@ import 'package:khafidh_mdtest/data/models/user_model.dart';
 import 'package:khafidh_mdtest/data/repositories/user_repository.dart';
 
 class UserProvider extends ChangeNotifier {
-  final UserRepository _userRepository = UserRepository();
+  final UserRepository _userRepository;
+
+  UserProvider({UserRepository? userRepository})
+    : _userRepository = userRepository ?? UserRepository();
 
   List<UserModel> _allUsers = [];
+
+  /// Setter khusus untuk testing agar bisa mengisi data user tanpa Firestore.
+  @visibleForTesting
+  set allUsersForTesting(List<UserModel> users) => _allUsers = users;
   bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _hasMore = true;

@@ -6,8 +6,11 @@ import 'package:khafidh_mdtest/core/utils/error_handler.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth;
+  final GoogleSignIn _googleSignIn;
 
-  AuthRepository({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
+  AuthRepository({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
+      : _auth = auth ?? FirebaseAuth.instance,
+        _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   User? get currentUser => _auth.currentUser;
 
@@ -29,7 +32,7 @@ class AuthRepository {
 
   Future<UserCredential> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         throw Exception('Google Sign-In dibatalkan oleh pengguna.');
       }
@@ -80,7 +83,15 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
-      await Future.wait([_auth.signOut(), GoogleSignIn().signOut()]);
+      // Google Sign-In signout tidak boleh menghalangi Firebase signout.
+      // Jika user login via email (bukan Google), signOut Google bisa gagal
+      // dan itu bukan masalah.
+      try {
+        await _googleSignIn.signOut();
+      } catch (_) {
+        // Abaikan error Google Sign-Out
+      }
+      await _auth.signOut();
     } on FirebaseAuthException catch (e) {
       throw Exception(ErrorHandler.getAuthErrorMessage(e));
     } catch (e) {

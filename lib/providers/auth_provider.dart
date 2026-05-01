@@ -7,8 +7,12 @@ import 'package:khafidh_mdtest/data/repositories/auth_repository.dart';
 import 'package:khafidh_mdtest/data/repositories/user_repository.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final AuthRepository _authRepository = AuthRepository();
-  final UserRepository _userRepository = UserRepository();
+  final AuthRepository _authRepository;
+  final UserRepository _userRepository;
+
+  AuthProvider({AuthRepository? authRepository, UserRepository? userRepository})
+      : _authRepository = authRepository ?? AuthRepository(),
+        _userRepository = userRepository ?? UserRepository();
 
   UserModel? _currentUser;
   bool _isLoading = false;
